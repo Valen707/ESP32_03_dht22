@@ -1,4 +1,10 @@
 #include "DHT.h"
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+const char* ssid = "viper";
+const char* password = "*******";
+const char* dweetIO = "https://dweet.io/dweet/for/ViperV";
 
 #define DHTPIN 4  //Pin de datos del sensor DHT11/22
 
@@ -41,4 +47,32 @@ void loop(){
    Serial.print(F("°F  Indice de calor: ")); 
    Serial.print(indiceCelsius);
    Serial.println(F("°C")); 
+
+     WiFi.begin(ssid, password); // Conexión a la red WiFi
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Conectando a WiFi...");
+  }
+  
+  HTTPClient http; 
+  
+  String url = dweetIO; 
+  url += "?temperatura=";
+  url += String(temperatura);
+  url += "&humedad=";
+  url += String(humedad);
+
+  http.begin(url); // Inicialización de la conexión HTTP
+  int httpCode = http.GET(); // Realizar la solicitud GET
+  
+  if (httpCode == HTTP_CODE_OK) { // Si la solicitud es correcta
+    String payload = http.getString(); // Obtener la respuesta
+    Serial.println(payload); // Imprimir la respuesta
+  }
+  else {
+    Serial.println("Error en la solicitud HTTP");
+  }
+  
+  http.end(); // Finalizar la conexión HTTP
+
 }
